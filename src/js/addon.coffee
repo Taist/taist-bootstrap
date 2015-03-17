@@ -1,13 +1,13 @@
+app = require './app'
+
 addonEntry =
   start: (_taistApi, entryPoint) ->
-    _taistApi.log 'Addon started'
+    window._app = app
+    app.api = _taistApi
 
-    require('./greetings/hello') _taistApi
-
-    _taistApi.companyData.set 'key', 'value ' + new Date, ->
-      console.log 'company data saved'
-
-    _taistApi.companyData.get 'key', (a, b) ->
-      console.log 'received from the server', a, b
+    app.api.wait.elementRender '#rcnt', (parent) ->
+      container = document.createElement 'div'
+      parent.get(0).appendChild container
+      require('./react/main').render container
 
 module.exports = addonEntry

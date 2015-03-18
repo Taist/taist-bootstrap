@@ -6,12 +6,16 @@ React = require 'react'
 
 TagsList = require './tags/tagsList'
 
+getElementRect = require './helpers/getElementRect'
+
 GoogleTags = React.createFactory React.createClass
   render: ->
+    tagsListRect = getElementRect document.querySelector '.appbar'
+
     div {
       style:
-        position: 'absolute'
-        top: 0
+        position: 'fixed'
+        top: tagsListRect.top
         right: '9.6%'
         width: '32%'
         padding: 8

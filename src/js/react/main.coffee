@@ -1,6 +1,10 @@
+app = require '../app'
+
 React = require 'react'
 
 { div } = React.DOM
+
+TagsList = require './tags/tagsList'
 
 GoogleTags = React.createFactory React.createClass
   render: ->
@@ -15,9 +19,15 @@ GoogleTags = React.createFactory React.createClass
         fontFamily: 'arial, sans-serif'
         fontSize: 13
     },
-      div {}, 'Tags by Tai.st'
+      div { style: padding: 4 }, 'Tags by Tai.st'
+      div { style: padding: 4 },
+        TagsList @props
 
 module.exports =
   render: (container) ->
-    data = {}
+    data = {
+      tagsIds: app.storage.getTagsIds()
+      tagsMap: app.storage.getTagsMap()
+    }
+
     React.render GoogleTags(data), container

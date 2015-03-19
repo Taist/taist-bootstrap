@@ -1,13 +1,18 @@
 app = require './app'
 
+DOMObserver = require './helpers/domObserver'
+
 addonEntry =
   start: (_taistApi, entryPoint) ->
     window._app = app
     app.api = _taistApi
 
-    app.api.wait.elementRender '#rcnt', (parent) ->
-      container = document.createElement 'div'
-      parent.get(0).appendChild container
-      require('./react/main').render container
+    app.elems = {}
+
+    observer = new DOMObserver()
+    observer.waitElementOnce '#rcnt', (parent) ->
+      app.elems.tagsList = document.createElement 'div'
+      parent.appendChild app.elems.tagsList
+      require('./react/main').render app.elems.tagsList
 
 module.exports = addonEntry

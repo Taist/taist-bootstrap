@@ -15,7 +15,7 @@ GoogleTags = React.createFactory React.createClass
     div {
       style:
         position: 'fixed'
-        top: tagsListRect.top
+        top: tagsListRect.top + 60
         right: '9.6%'
         width: '32%'
         padding: 8

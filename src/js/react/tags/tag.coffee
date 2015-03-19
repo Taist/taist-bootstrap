@@ -2,7 +2,7 @@ React = require 'react'
 
 { div } = React.DOM
 
-getElementRect = require '../helpers/getElementRect'
+getElementRect = require '../../helpers/getElementRect'
 
 Tag = React.createFactory React.createClass
   onDragStart: (event) ->

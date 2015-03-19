@@ -3,15 +3,18 @@ class DOMObserver
   isActive: no
   observers: {}
 
+  processedOnce: []
+
   constructor: ->
     @bodyObserver = new MutationObserver (mutations) =>
       mutations.forEach (mutation) =>
-
         for selector, observer of @observers
-          if mutation.target.querySelector selector
-            if observer.once is yes
-              delete @observers[selector]
-            observer.action( mutation.target )
+          nodesList = mutation.target.querySelectorAll selector
+          matchedElems = Array.prototype.slice.call nodesList
+          matchedElems.forEach (elem) =>
+            if elem and @processedOnce.indexOf(elem) < 0
+              @processedOnce.push elem
+              observer.action elem
 
   activateMainObserver: ->
     unless @isActive
@@ -24,8 +27,8 @@ class DOMObserver
 
       @bodyObserver.observe target, config
 
-  waitElementOnce: ( selector, action ) ->
+  waitElement: (selector, action) ->
     @activateMainObserver()
-    @observers[selector] = { selector, action, once: yes }
+    @observers[selector] = { selector, action }
 
 module.exports = DOMObserver

@@ -32,6 +32,12 @@ module.exports =
     data = {
       tagsIds: app.storage.getTagsIds()
       tagsMap: app.storage.getTagsMap()
+
+      actions:
+        assignTag: app.actions.assignTag
+
+      helpers:
+        getTargetData: app.helpers.getTargetData
     }
 
     React.render GoogleTags(data), container

@@ -1,7 +1,7 @@
 function init(){var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var data;
+var app, appData, extend;
 
-data = {
+appData = {
   tags: [
     {
       id: 'some-unique-id',
@@ -12,24 +12,71 @@ data = {
       name: 'react',
       color: 'SteelBlue'
     }
-  ]
+  ],
+  entities: {
+    'https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore': {
+      tags: ['some-unique-id'],
+      id: 'https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore',
+      title: 'Node.insertBefore() - Web API Interfaces | MDN'
+    }
+  }
 };
 
-module.exports = {
+extend = require('react/lib/Object.assign');
+
+app = {
   api: null,
+  actions: {
+    assignTag: function(object, tag, element) {
+      var React, TagList, entity, renderData;
+      entity = appData.entities[object.id] || {
+        tags: []
+      };
+      entity = extend({}, appData.entities[object.id] || {
+        tags: []
+      }, object);
+      if (entity.tags.indexOf(tag.id < 0)) {
+        entity.tags.push(tag.id);
+      }
+      console.log('assignTag', JSON.stringify(entity));
+      appData.entities[object.id] = entity;
+      TagList = require('./react/tags/tagsList');
+      renderData = {
+        tagsIds: entity.tags,
+        tagsMap: app.storage.getTagsMap(),
+        actions: app.actions,
+        helpers: app.helpers
+      };
+      React = require('react');
+      return React.render(TagList(renderData), element.querySelector('.taistTags'));
+    }
+  },
+  helpers: {
+    getTargetData: function(elem) {
+      var link;
+      link = elem.querySelector('h3 a');
+      return {
+        id: link.href,
+        title: link.innerText
+      };
+    }
+  },
   storage: {
+    getEntity: function(id) {
+      return appData.entities[id] || null;
+    },
     getTagsArray: function() {
-      return data.tags;
+      return appData.tags;
     },
     getTagsIds: function() {
-      return data.tags.map(function(tag) {
+      return appData.tags.map(function(tag) {
         return tag.id;
       });
     },
     getTagsMap: function() {
       var result;
       result = {};
-      data.tags.forEach(function(tag) {
+      appData.tags.forEach(function(tag) {
         return result[tag.id] = tag;
       });
       return result;
@@ -37,7 +84,9 @@ module.exports = {
   }
 };
 
-},{}],2:[function(require,module,exports){
+module.exports = app;
+
+},{"./react/tags/tagsList":7,"react":163,"react/lib/Object.assign":34}],2:[function(require,module,exports){
 var DOMObserver;
 
 DOMObserver = (function() {
@@ -47,23 +96,25 @@ DOMObserver = (function() {
 
   DOMObserver.prototype.observers = {};
 
+  DOMObserver.prototype.processedOnce = [];
+
   function DOMObserver() {
     this.bodyObserver = new MutationObserver((function(_this) {
       return function(mutations) {
         return mutations.forEach(function(mutation) {
-          var observer, selector, _ref, _results;
+          var matchedElems, nodesList, observer, selector, _ref, _results;
           _ref = _this.observers;
           _results = [];
           for (selector in _ref) {
             observer = _ref[selector];
-            if (mutation.target.querySelector(selector)) {
-              if (observer.once === true) {
-                delete _this.observers[selector];
+            nodesList = mutation.target.querySelectorAll(selector);
+            matchedElems = Array.prototype.slice.call(nodesList);
+            _results.push(matchedElems.forEach(function(elem) {
+              if (elem && _this.processedOnce.indexOf(elem) < 0) {
+                _this.processedOnce.push(elem);
+                return observer.action(elem);
               }
-              _results.push(observer.action(mutation.target));
-            } else {
-              _results.push(void 0);
-            }
+            }));
           }
           return _results;
         });
@@ -84,12 +135,11 @@ DOMObserver = (function() {
     }
   };
 
-  DOMObserver.prototype.waitElementOnce = function(selector, action) {
+  DOMObserver.prototype.waitElement = function(selector, action) {
     this.activateMainObserver();
     return this.observers[selector] = {
       selector: selector,
-      action: action,
-      once: true
+      action: action
     };
   };
 
@@ -170,14 +220,20 @@ module.exports = {
     var data;
     data = {
       tagsIds: app.storage.getTagsIds(),
-      tagsMap: app.storage.getTagsMap()
+      tagsMap: app.storage.getTagsMap(),
+      actions: {
+        assignTag: app.actions.assignTag
+      },
+      helpers: {
+        getTargetData: app.helpers.getTargetData
+      }
     };
     return React.render(GoogleTags(data), container);
   }
 };
 
 },{"../app":1,"./helpers/getElementRect":4,"./tags/tagsList":7,"react":163}],6:[function(require,module,exports){
-var React, Tag, div, getElementRect;
+var React, Tag, div, findDropTarget, getElementRect;
 
 React = require('react');
 
@@ -185,19 +241,29 @@ div = React.DOM.div;
 
 getElementRect = require('../../helpers/getElementRect');
 
+findDropTarget = function(selector, coords) {
+  var dropTargets, targets;
+  targets = Array.prototype.slice.call(document.querySelectorAll(selector));
+  dropTargets = targets.filter(function(target) {
+    var dropTarget, rect, _ref, _ref1;
+    rect = getElementRect(target);
+    return dropTarget = (rect.left < (_ref = coords.x + window.scrollX) && _ref < (rect.left + rect.width)) && (rect.top < (_ref1 = coords.y + window.scrollY) && _ref1 < (rect.top + rect.height));
+  });
+  return dropTargets != null ? dropTargets[0] : void 0;
+};
+
 Tag = React.createFactory(React.createClass({
   onDragStart: function(event) {},
   onDragEnd: function(event) {
-    var dropX, dropY, queryResults, targetResult;
-    dropX = event.clientX;
-    dropY = event.clientY;
-    queryResults = Array.prototype.slice.call(document.querySelectorAll('[data-hveid]'));
-    return targetResult = queryResults.filter(function(result) {
-      var dropTarget, rect, _ref, _ref1;
-      rect = getElementRect(result);
-      dropTarget = (rect.left < (_ref = dropX + window.scrollX) && _ref < (rect.left + rect.width)) && (rect.top < (_ref1 = dropY + window.scrollY) && _ref1 < (rect.top + rect.height));
-      return console.log(rect, dropTarget);
+    var dropTarget, targetData, _base, _ref;
+    dropTarget = findDropTarget('[data-hveid]', {
+      x: event.clientX,
+      y: event.clientY
     });
+    if (dropTarget) {
+      targetData = typeof (_base = this.props.helpers).getTargetData === "function" ? _base.getTargetData(dropTarget) : void 0;
+      return (_ref = this.props.actions) != null ? typeof _ref.assignTag === "function" ? _ref.assignTag(targetData, this.props.tag, dropTarget) : void 0 : void 0;
+    }
   },
   render: function() {
     return div({
@@ -205,7 +271,7 @@ Tag = React.createFactory(React.createClass({
       onDragStart: this.onDragStart,
       onDragEnd: this.onDragEnd,
       style: {
-        padding: "2px 6px",
+        padding: "1px 4px",
         borderRadius: 4,
         border: "1px solid " + this.props.tag.color,
         backgroundColor: this.props.tag.color,
@@ -238,7 +304,9 @@ TagsList = React.createFactory(React.createClass({
             display: 'inline-block'
           }
         }, Tag({
-          tag: tag
+          tag: tag,
+          actions: _this.props.actions,
+          helpers: _this.props.helpers
         }));
       };
     })(this)));
@@ -20006,16 +20074,36 @@ addonEntry = {
     app.api = _taistApi;
     app.elems = {};
     observer = new DOMObserver();
-    return observer.waitElementOnce('#rcnt', function(parent) {
+    observer.waitElement('#rcnt', function(elem) {
       app.elems.tagsList = document.createElement('div');
-      parent.appendChild(app.elems.tagsList);
+      elem.appendChild(app.elems.tagsList);
       return require('./react/main').render(app.elems.tagsList);
+    });
+    return observer.waitElement('[data-hveid]', function(elem) {
+      var React, TagList, container, data, entity, targetData;
+      container = document.createElement('div');
+      container.className = 'taistTags';
+      elem.insertBefore(container, elem.querySelector('div'));
+      targetData = app.helpers.getTargetData(elem);
+      entity = app.storage.getEntity(targetData.id);
+      if (entity) {
+        console.log('on [data-hveid]', entity);
+        TagList = require('./react/tags/tagsList');
+        data = {
+          tagsIds: entity.tags,
+          tagsMap: app.storage.getTagsMap(),
+          actions: app.actions,
+          helpers: app.helpers
+        };
+        React = require('react');
+        return React.render(TagList(data), container);
+      }
     });
   }
 };
 
 module.exports = addonEntry;
 
-},{"./app":1,"./helpers/domObserver":2,"./react/main":5}]},{},[]);
+},{"./app":1,"./helpers/domObserver":2,"./react/main":5,"./react/tags/tagsList":7,"react":163}]},{},[]);
 ;return require("addon")}
 //Just a sample of concat task

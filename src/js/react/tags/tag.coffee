@@ -4,19 +4,23 @@ React = require 'react'
 
 getElementRect = require '../../helpers/getElementRect'
 
+findDropTarget = (selector, coords) ->
+  targets = Array.prototype.slice.call(document.querySelectorAll(selector))
+  dropTargets = targets.filter (target) ->
+    rect = getElementRect target
+    dropTarget = rect.left < ( coords.x + window.scrollX ) < ( rect.left + rect.width ) and
+      rect.top < ( coords.y + window.scrollY ) < ( rect.top + rect.height )
+
+  dropTargets?[0]
+
 Tag = React.createFactory React.createClass
   onDragStart: (event) ->
 
   onDragEnd: (event) ->
-    dropX = event.clientX
-    dropY = event.clientY
-
-    queryResults = Array.prototype.slice.call(document.querySelectorAll('[data-hveid]'))
-    targetResult = queryResults.filter (result) ->
-      rect = getElementRect result
-      dropTarget = rect.left < ( dropX + window.scrollX ) < ( rect.left + rect.width ) and
-        rect.top < ( dropY + window.scrollY ) < ( rect.top + rect.height )
-      console.log rect, dropTarget
+    dropTarget = findDropTarget '[data-hveid]', { x: event.clientX, y: event.clientY }
+    if dropTarget
+      targetData = @props.helpers.getTargetData?( dropTarget )
+      @props.actions?.assignTag?( targetData, @props.tag, dropTarget )
 
   render: ->
     div {
@@ -24,7 +28,7 @@ Tag = React.createFactory React.createClass
       onDragStart: @onDragStart
       onDragEnd: @onDragEnd
       style:
-        padding: "2px 6px"
+        padding: "1px 4px"
         borderRadius: 4
         border: "1px solid #{@props.tag.color}"
         backgroundColor: @props.tag.color

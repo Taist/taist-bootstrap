@@ -2,6 +2,8 @@ React = require 'react'
 
 { div } = React.DOM
 
+AwesomeIcons = require '../taist/awesomeIcons'
+
 getElementRect = require '../../helpers/getElementRect'
 
 findDropTarget = (selector, coords) ->
@@ -33,7 +35,20 @@ Tag = React.createFactory React.createClass
         border: "1px solid #{@props.tag.color}"
         backgroundColor: @props.tag.color
         marginRight: 6
+        display: 'inline-block'
     },
-      div {}, @props.tag.name
+      div { style: display: 'inline-block' }, @props.tag.name
+      div {
+        style:
+          display: 'inline-block'
+          position: 'relative'
+          width: 10
+          height: 10
+          marginLeft: 2
+          cursor: 'pointer'
+          backgroundImage: AwesomeIcons.getURL 'remove'
+          backgroundSize: 'contain'
+          backgroundRepeat: 'no-repeat'
+      }
 
 module.exports = Tag

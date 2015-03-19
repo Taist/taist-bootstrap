@@ -20,7 +20,7 @@ app =
       app.storage.getEntity object.id, (savedEntity) ->
         entity = extend({ tags: [] }, savedEntity, object)
 
-        if entity.tags.indexOf tag.id < 0
+        if entity.tags.indexOf(tag.id) < 0
           entity.tags.push tag.id
 
         console.log 'assignTag', JSON.stringify entity

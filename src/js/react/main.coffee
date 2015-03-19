@@ -5,6 +5,7 @@ React = require 'react'
 { div } = React.DOM
 
 TagsList = require './tags/tagsList'
+TagsEditor = require './tags/tagsEditor'
 
 getElementRect = require './helpers/getElementRect'
 
@@ -15,7 +16,7 @@ GoogleTags = React.createFactory React.createClass
     div {
       style:
         position: 'fixed'
-        top: tagsListRect.top + 60
+        top: tagsListRect.top
         right: '9.6%'
         width: '32%'
         padding: 8
@@ -26,8 +27,9 @@ GoogleTags = React.createFactory React.createClass
       div { style: padding: 4 }, 'Tags by Tai.st'
       div { style: padding: 4 },
         TagsList @props
+        TagsEditor @props
 
 module.exports =
-  render: (container) ->
+  render: ->
     renderData = app.helpers.prepareTagListData app.storage.getTagsIds()
-    React.render GoogleTags(renderData), container
+    React.render GoogleTags(renderData), app.elems.tagsList

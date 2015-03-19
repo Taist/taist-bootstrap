@@ -32,7 +32,7 @@ Tag = React.createFactory React.createClass
         borderRadius: 4
         border: "1px solid #{@props.tag.color}"
         backgroundColor: @props.tag.color
-        marginRight: 8
+        marginRight: 6
     },
       div {}, @props.tag.name
 

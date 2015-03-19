@@ -1,18 +1,16 @@
+React = require 'react'
+
+extend = require 'react/lib/Object.assign'
+generateUUID = require './helpers/generateUUID'
+
 appData =
-  tags: [
-    { id: 'some-unique-id', name: 'tai.st', color: 'DeepSkyBlue' }
-    { id: 'another-unique-id', name: 'react', color: 'SteelBlue' }
-  ]
+  tags: []
 
   entities:
     'https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore':
       tags: ['some-unique-id']
       id: 'https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore'
       title: 'Node.insertBefore() - Web API Interfaces | MDN'
-
-extend = require 'react/lib/Object.assign'
-
-React = require 'react'
 
 app =
   api: null
@@ -29,6 +27,13 @@ app =
 
         app.storage.setEntity entity, (entity) ->
           app.helpers.renredTagsList entity.tags, element.querySelector '.taistTags'
+
+    onSaveTag: (id, name, color = 'SkyBlue') ->
+      unless id
+        id = generateUUID()
+      appData.tags.push { id, name, color }
+      app.api.userData.set 'googleTags', appData.tags, ->
+        require('./react/main').render()
 
   helpers:
     renredTagsList: (tags, container) ->
@@ -60,7 +65,12 @@ app =
         callback entity
       else
         app.api.userData.get id, (error, entity) ->
-          callback entity or null 
+          callback entity or null
+
+    getTags: (callback) ->
+      app.api.userData.get 'googleTags', (error, tags) ->
+        appData.tags = tags
+        callback tags
 
     getTagsArray: ->
       appData.tags

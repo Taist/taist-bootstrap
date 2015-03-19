@@ -29,15 +29,5 @@ GoogleTags = React.createFactory React.createClass
 
 module.exports =
   render: (container) ->
-    data = {
-      tagsIds: app.storage.getTagsIds()
-      tagsMap: app.storage.getTagsMap()
-
-      actions:
-        assignTag: app.actions.assignTag
-
-      helpers:
-        getTargetData: app.helpers.getTargetData
-    }
-
-    React.render GoogleTags(data), container
+    renderData = app.helpers.prepareTagListData app.storage.getTagsIds()
+    React.render GoogleTags(renderData), container

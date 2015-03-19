@@ -12,32 +12,36 @@ appData =
 
 extend = require 'react/lib/Object.assign'
 
+React = require 'react'
+
 app =
   api: null
 
   actions:
     assignTag: (object, tag, element) ->
-      entity = appData.entities[object.id] or { tags: [] }
-      entity = extend({}, appData.entities[object.id] or { tags: [] }, object)
-      if entity.tags.indexOf tag.id < 0
-        entity.tags.push tag.id
+      app.storage.getEntity object.id, (savedEntity) ->
+        entity = extend({ tags: [] }, savedEntity, object)
 
-      console.log 'assignTag', JSON.stringify entity
-      appData.entities[object.id] = entity
+        if entity.tags.indexOf tag.id < 0
+          entity.tags.push tag.id
 
-      TagList = require('./react/tags/tagsList')
+        console.log 'assignTag', JSON.stringify entity
 
-      renderData =
-        tagsIds: entity.tags
-        tagsMap: app.storage.getTagsMap()
-        actions: app.actions
-        helpers: app.helpers
-
-      React = require 'react'
-      React.render ( TagList renderData ), element.querySelector '.taistTags'
-
+        app.storage.setEntity entity, (entity) ->
+          app.helpers.renredTagsList entity.tags, element.querySelector '.taistTags'
 
   helpers:
+    renredTagsList: (tags, container) ->
+      TagList = require('./react/tags/tagsList')
+      renderData = app.helpers.prepareTagListData tags
+      React.render ( TagList renderData ), container
+
+    prepareTagListData: (tags) ->
+      tagsIds: tags
+      tagsMap: app.storage.getTagsMap()
+      actions: app.actions
+      helpers: app.helpers
+
     getTargetData: (elem) ->
       link = elem.querySelector 'h3 a'
 
@@ -45,8 +49,18 @@ app =
       title: link.innerText
 
   storage:
-    getEntity: (id) ->
-      appData.entities[id] or null
+    setEntity: (entity, callback) ->
+      app.api.userData.set entity.id, entity, () ->
+        appData.entities[entity.id] = entity
+        callback entity
+
+    getEntity: (id, callback) ->
+      entity = appData.entities[id] or null
+      if entity
+        callback entity
+      else
+        app.api.userData.get id, (error, entity) ->
+          callback entity or null 
 
     getTagsArray: ->
       appData.tags

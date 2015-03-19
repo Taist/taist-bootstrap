@@ -1,5 +1,5 @@
 function init(){var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var app, appData, extend;
+var React, app, appData, extend;
 
 appData = {
   tags: [
@@ -24,34 +24,42 @@ appData = {
 
 extend = require('react/lib/Object.assign');
 
+React = require('react');
+
 app = {
   api: null,
   actions: {
     assignTag: function(object, tag, element) {
-      var React, TagList, entity, renderData;
-      entity = appData.entities[object.id] || {
-        tags: []
-      };
-      entity = extend({}, appData.entities[object.id] || {
-        tags: []
-      }, object);
-      if (entity.tags.indexOf(tag.id < 0)) {
-        entity.tags.push(tag.id);
-      }
-      console.log('assignTag', JSON.stringify(entity));
-      appData.entities[object.id] = entity;
+      return app.storage.getEntity(object.id, function(savedEntity) {
+        var entity;
+        entity = extend({
+          tags: []
+        }, savedEntity, object);
+        if (entity.tags.indexOf(tag.id < 0)) {
+          entity.tags.push(tag.id);
+        }
+        console.log('assignTag', JSON.stringify(entity));
+        return app.storage.setEntity(entity, function(entity) {
+          return app.helpers.renredTagsList(entity.tags, element.querySelector('.taistTags'));
+        });
+      });
+    }
+  },
+  helpers: {
+    renredTagsList: function(tags, container) {
+      var TagList, renderData;
       TagList = require('./react/tags/tagsList');
-      renderData = {
-        tagsIds: entity.tags,
+      renderData = app.helpers.prepareTagListData(tags);
+      return React.render(TagList(renderData), container);
+    },
+    prepareTagListData: function(tags) {
+      return {
+        tagsIds: tags,
         tagsMap: app.storage.getTagsMap(),
         actions: app.actions,
         helpers: app.helpers
       };
-      React = require('react');
-      return React.render(TagList(renderData), element.querySelector('.taistTags'));
-    }
-  },
-  helpers: {
+    },
     getTargetData: function(elem) {
       var link;
       link = elem.querySelector('h3 a');
@@ -62,8 +70,22 @@ app = {
     }
   },
   storage: {
-    getEntity: function(id) {
-      return appData.entities[id] || null;
+    setEntity: function(entity, callback) {
+      return app.api.userData.set(entity.id, entity, function() {
+        appData.entities[entity.id] = entity;
+        return callback(entity);
+      });
+    },
+    getEntity: function(id, callback) {
+      var entity;
+      entity = appData.entities[id] || null;
+      if (entity) {
+        return callback(entity);
+      } else {
+        return app.api.userData.get(id, function(error, entity) {
+          return callback(entity || null);
+        });
+      }
     },
     getTagsArray: function() {
       return appData.tags;
@@ -217,18 +239,9 @@ GoogleTags = React.createFactory(React.createClass({
 
 module.exports = {
   render: function(container) {
-    var data;
-    data = {
-      tagsIds: app.storage.getTagsIds(),
-      tagsMap: app.storage.getTagsMap(),
-      actions: {
-        assignTag: app.actions.assignTag
-      },
-      helpers: {
-        getTargetData: app.helpers.getTargetData
-      }
-    };
-    return React.render(GoogleTags(data), container);
+    var renderData;
+    renderData = app.helpers.prepareTagListData(app.storage.getTagsIds());
+    return React.render(GoogleTags(renderData), container);
   }
 };
 
@@ -20080,24 +20093,26 @@ addonEntry = {
       return require('./react/main').render(app.elems.tagsList);
     });
     return observer.waitElement('[data-hveid]', function(elem) {
-      var React, TagList, container, data, entity, targetData;
+      var container, targetData;
       container = document.createElement('div');
       container.className = 'taistTags';
       elem.insertBefore(container, elem.querySelector('div'));
       targetData = app.helpers.getTargetData(elem);
-      entity = app.storage.getEntity(targetData.id);
-      if (entity) {
-        console.log('on [data-hveid]', entity);
-        TagList = require('./react/tags/tagsList');
-        data = {
-          tagsIds: entity.tags,
-          tagsMap: app.storage.getTagsMap(),
-          actions: app.actions,
-          helpers: app.helpers
-        };
-        React = require('react');
-        return React.render(TagList(data), container);
-      }
+      return app.storage.getEntity(targetData.id, function(entity) {
+        var React, TagList, data;
+        if (entity) {
+          console.log('on [data-hveid]', entity);
+          TagList = require('./react/tags/tagsList');
+          data = {
+            tagsIds: entity.tags,
+            tagsMap: app.storage.getTagsMap(),
+            actions: app.actions,
+            helpers: app.helpers
+          };
+          React = require('react');
+          return React.render(TagList(data), container);
+        }
+      });
     });
   }
 };

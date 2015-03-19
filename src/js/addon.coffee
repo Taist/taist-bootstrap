@@ -20,21 +20,21 @@ addonEntry =
       container.className = 'taistTags'
       elem.insertBefore container, elem.querySelector 'div'
       targetData = app.helpers.getTargetData elem
-      entity = app.storage.getEntity targetData.id
 
-      if entity
-        console.log 'on [data-hveid]', entity
-        TagList = require('./react/tags/tagsList')
+      app.storage.getEntity targetData.id, (entity) ->
+        if entity
+          console.log 'on [data-hveid]', entity
+          TagList = require('./react/tags/tagsList')
 
-        data =
-          tagsIds: entity.tags
-          tagsMap: app.storage.getTagsMap()
+          data =
+            tagsIds: entity.tags
+            tagsMap: app.storage.getTagsMap()
 
-          actions: app.actions
-          helpers: app.helpers
+            actions: app.actions
+            helpers: app.helpers
 
-        React = require 'react'
-        React.render ( TagList data ), container
+          React = require 'react'
+          React.render ( TagList data ), container
 
 
 

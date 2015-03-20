@@ -5,42 +5,25 @@ generateUUID = require './helpers/generateUUID'
 
 appData =
   tags: []
-
-  entities:
-    'https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore':
-      tags: ['some-unique-id']
-      id: 'https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore'
-      title: 'Node.insertBefore() - Web API Interfaces | MDN'
+  entities: {}
 
 app =
   api: null
 
   actions:
     assignTag: (object, tag, element) ->
-      app.storage.getEntity object.id, (savedEntity) ->
-        entity = extend({ tags: [] }, savedEntity, object)
-
-        if entity.tags.indexOf(tag.id) < 0
-          console.log 'assignTag', JSON.stringify entity
-          entity.tags.push tag.id
-
-        app.storage.setEntity entity, (entity) ->
-          app.helpers.renredTagsList {
-            entityId: entity.id
-            tags: entity.tags
-          }, element.querySelector '.taistTags'
+      app.storage.assignTag object, tag, (entity) ->
+        app.helpers.renredTagsList {
+          entityId: entity.id
+          tags: entity.tags
+        }, element.querySelector '.taistTags'
 
     deleteTag: (entityId, tag, element) ->
-      app.storage.getEntity entityId, (entity) ->
-        entity.tags.splice entity.tags.indexOf(tag.id), 1
-
-        console.log 'deleteTag', JSON.stringify entity
-
-        app.storage.setEntity entity, (entity) ->
-          app.helpers.renredTagsList {
-            entityId: entity.id
-            tags: entity.tags
-          }, element
+      app.storage.deleteTag entityId, tag, (entity) ->
+        app.helpers.renredTagsList {
+          entityId: entity.id
+          tags: entity.tags
+        }, element
 
     onSaveTag: (id, name, color = 'SkyBlue') ->
       unless id
@@ -89,6 +72,23 @@ app =
       else
         app.api.userData.get id, (error, entity) ->
           callback entity or null
+
+    assignTag: (object, tag, callback) ->
+      app.storage.getEntity object.id, (savedEntity) ->
+        entity = extend({ tags: [] }, savedEntity, object)
+
+        if entity.tags.indexOf(tag.id) < 0
+          entity.tags.push tag.id
+          console.log 'assignTag', JSON.stringify entity
+
+          app.storage.setEntity entity, callback
+
+    deleteTag: (entityId, tag, callback) ->
+      app.storage.getEntity entityId, (entity) ->
+        entity.tags.splice entity.tags.indexOf(tag.id), 1
+
+        console.log 'deleteTag', JSON.stringify entity
+        app.storage.setEntity entity, callback
 
     getTags: (callback) ->
       app.api.userData.get 'googleTags', (error, tags) ->

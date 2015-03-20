@@ -9,46 +9,26 @@ generateUUID = require('./helpers/generateUUID');
 
 appData = {
   tags: [],
-  entities: {
-    'https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore': {
-      tags: ['some-unique-id'],
-      id: 'https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore',
-      title: 'Node.insertBefore() - Web API Interfaces | MDN'
-    }
-  }
+  entities: {}
 };
 
 app = {
   api: null,
   actions: {
     assignTag: function(object, tag, element) {
-      return app.storage.getEntity(object.id, function(savedEntity) {
-        var entity;
-        entity = extend({
-          tags: []
-        }, savedEntity, object);
-        if (entity.tags.indexOf(tag.id) < 0) {
-          console.log('assignTag', JSON.stringify(entity));
-          entity.tags.push(tag.id);
-        }
-        return app.storage.setEntity(entity, function(entity) {
-          return app.helpers.renredTagsList({
-            entityId: entity.id,
-            tags: entity.tags
-          }, element.querySelector('.taistTags'));
-        });
+      return app.storage.assignTag(object, tag, function(entity) {
+        return app.helpers.renredTagsList({
+          entityId: entity.id,
+          tags: entity.tags
+        }, element.querySelector('.taistTags'));
       });
     },
     deleteTag: function(entityId, tag, element) {
-      return app.storage.getEntity(entityId, function(entity) {
-        entity.tags.splice(entity.tags.indexOf(tag.id), 1);
-        console.log('deleteTag', JSON.stringify(entity));
-        return app.storage.setEntity(entity, function(entity) {
-          return app.helpers.renredTagsList({
-            entityId: entity.id,
-            tags: entity.tags
-          }, element);
-        });
+      return app.storage.deleteTag(entityId, tag, function(entity) {
+        return app.helpers.renredTagsList({
+          entityId: entity.id,
+          tags: entity.tags
+        }, element);
       });
     },
     onSaveTag: function(id, name, color) {
@@ -118,6 +98,26 @@ app = {
           return callback(entity || null);
         });
       }
+    },
+    assignTag: function(object, tag, callback) {
+      return app.storage.getEntity(object.id, function(savedEntity) {
+        var entity;
+        entity = extend({
+          tags: []
+        }, savedEntity, object);
+        if (entity.tags.indexOf(tag.id) < 0) {
+          entity.tags.push(tag.id);
+          console.log('assignTag', JSON.stringify(entity));
+          return app.storage.setEntity(entity, callback);
+        }
+      });
+    },
+    deleteTag: function(entityId, tag, callback) {
+      return app.storage.getEntity(entityId, function(entity) {
+        entity.tags.splice(entity.tags.indexOf(tag.id), 1);
+        console.log('deleteTag', JSON.stringify(entity));
+        return app.storage.setEntity(entity, callback);
+      });
     },
     getTags: function(callback) {
       return app.api.userData.get('googleTags', function(error, tags) {

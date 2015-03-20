@@ -12,6 +12,7 @@ addonEntry =
     app.storage.getTags (tags) ->
 
       observer = new DOMObserver()
+      
       observer.waitElement '#rcnt', (elem) ->
         app.elems.tagsList = document.createElement 'div'
         elem.appendChild app.elems.tagsList
@@ -25,6 +26,9 @@ addonEntry =
 
         app.storage.getEntity targetData.id, (entity) ->
           if entity
-            app.helpers.renredTagsList entity.tags, container
+            app.helpers.renredTagsList {
+              entityId: entity.id
+              tags: entity.tags
+            }, container
 
 module.exports = addonEntry

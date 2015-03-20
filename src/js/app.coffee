@@ -21,12 +21,26 @@ app =
         entity = extend({ tags: [] }, savedEntity, object)
 
         if entity.tags.indexOf(tag.id) < 0
+          console.log 'assignTag', JSON.stringify entity
           entity.tags.push tag.id
 
-        console.log 'assignTag', JSON.stringify entity
+        app.storage.setEntity entity, (entity) ->
+          app.helpers.renredTagsList {
+            entityId: entity.id
+            tags: entity.tags
+          }, element.querySelector '.taistTags'
+
+    deleteTag: (entityId, tag, element) ->
+      app.storage.getEntity entityId, (entity) ->
+        entity.tags.splice entity.tags.indexOf(tag.id), 1
+
+        console.log 'deleteTag', JSON.stringify entity
 
         app.storage.setEntity entity, (entity) ->
-          app.helpers.renredTagsList entity.tags, element.querySelector '.taistTags'
+          app.helpers.renredTagsList {
+            entityId: entity.id
+            tags: entity.tags
+          }, element
 
     onSaveTag: (id, name, color = 'SkyBlue') ->
       unless id
@@ -36,9 +50,17 @@ app =
         require('./react/main').render()
 
   helpers:
-    renredTagsList: (tags, container) ->
+    renredTagsList: (options, container) ->
       TagList = require('./react/tags/tagsList')
-      renderData = app.helpers.prepareTagListData tags
+
+      renderData = app.helpers.prepareTagListData options.tags
+      extend renderData, {
+        entityId: options.entityId
+        actions:
+          onDelete: (entityId, tag) ->
+            app.actions.deleteTag entityId, tag, container
+      }
+
       React.render ( TagList renderData ), container
 
     prepareTagListData: (tags) ->
@@ -46,6 +68,7 @@ app =
       tagsMap: app.storage.getTagsMap()
       actions: app.actions
       helpers: app.helpers
+      canBeDeleted: true
 
     getTargetData: (elem) ->
       link = elem.querySelector 'h3 a'

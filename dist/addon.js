@@ -28,11 +28,26 @@ app = {
           tags: []
         }, savedEntity, object);
         if (entity.tags.indexOf(tag.id) < 0) {
+          console.log('assignTag', JSON.stringify(entity));
           entity.tags.push(tag.id);
         }
-        console.log('assignTag', JSON.stringify(entity));
         return app.storage.setEntity(entity, function(entity) {
-          return app.helpers.renredTagsList(entity.tags, element.querySelector('.taistTags'));
+          return app.helpers.renredTagsList({
+            entityId: entity.id,
+            tags: entity.tags
+          }, element.querySelector('.taistTags'));
+        });
+      });
+    },
+    deleteTag: function(entityId, tag, element) {
+      return app.storage.getEntity(entityId, function(entity) {
+        entity.tags.splice(entity.tags.indexOf(tag.id), 1);
+        console.log('deleteTag', JSON.stringify(entity));
+        return app.storage.setEntity(entity, function(entity) {
+          return app.helpers.renredTagsList({
+            entityId: entity.id,
+            tags: entity.tags
+          }, element);
         });
       });
     },
@@ -54,10 +69,18 @@ app = {
     }
   },
   helpers: {
-    renredTagsList: function(tags, container) {
+    renredTagsList: function(options, container) {
       var TagList, renderData;
       TagList = require('./react/tags/tagsList');
-      renderData = app.helpers.prepareTagListData(tags);
+      renderData = app.helpers.prepareTagListData(options.tags);
+      extend(renderData, {
+        entityId: options.entityId,
+        actions: {
+          onDelete: function(entityId, tag) {
+            return app.actions.deleteTag(entityId, tag, container);
+          }
+        }
+      });
       return React.render(TagList(renderData), container);
     },
     prepareTagListData: function(tags) {
@@ -65,7 +88,8 @@ app = {
         tagsIds: tags,
         tagsMap: app.storage.getTagsMap(),
         actions: app.actions,
-        helpers: app.helpers
+        helpers: app.helpers,
+        canBeDeleted: true
       };
     },
     getTargetData: function(elem) {
@@ -134,23 +158,30 @@ DOMObserver = (function() {
 
   DOMObserver.prototype.processedOnce = [];
 
+  DOMObserver.prototype.checkForAction = function(selector, observer, container) {
+    var matchedElems, nodesList;
+    nodesList = container.querySelectorAll(selector);
+    matchedElems = Array.prototype.slice.call(nodesList);
+    return matchedElems.forEach((function(_this) {
+      return function(elem) {
+        if (elem && _this.processedOnce.indexOf(elem) < 0) {
+          _this.processedOnce.push(elem);
+          return observer.action(elem);
+        }
+      };
+    })(this));
+  };
+
   function DOMObserver() {
     this.bodyObserver = new MutationObserver((function(_this) {
       return function(mutations) {
         return mutations.forEach(function(mutation) {
-          var matchedElems, nodesList, observer, selector, _ref, _results;
+          var observer, selector, _ref, _results;
           _ref = _this.observers;
           _results = [];
           for (selector in _ref) {
             observer = _ref[selector];
-            nodesList = mutation.target.querySelectorAll(selector);
-            matchedElems = Array.prototype.slice.call(nodesList);
-            _results.push(matchedElems.forEach(function(elem) {
-              if (elem && _this.processedOnce.indexOf(elem) < 0) {
-                _this.processedOnce.push(elem);
-                return observer.action(elem);
-              }
-            }));
+            _results.push(_this.checkForAction(selector, observer, mutation.target));
           }
           return _results;
         });
@@ -172,11 +203,14 @@ DOMObserver = (function() {
   };
 
   DOMObserver.prototype.waitElement = function(selector, action) {
+    var observer;
     this.activateMainObserver();
-    return this.observers[selector] = {
+    observer = {
       selector: selector,
       action: action
     };
+    this.observers[selector] = observer;
+    return this.checkForAction(selector, observer, document.querySelector('body'));
   };
 
   return DOMObserver;
@@ -269,6 +303,7 @@ module.exports = {
   render: function() {
     var renderData;
     renderData = app.helpers.prepareTagListData(app.storage.getTagsIds());
+    renderData.canBeDeleted = false;
     return React.render(GoogleTags(renderData), app.elems.tagsList);
   }
 };
@@ -308,6 +343,10 @@ Tag = React.createFactory(React.createClass({
       return (_ref = this.props.actions) != null ? typeof _ref.assignTag === "function" ? _ref.assignTag(targetData, this.props.tag, dropTarget) : void 0 : void 0;
     }
   },
+  onDelete: function() {
+    var _base;
+    return typeof (_base = this.props.actions).onDelete === "function" ? _base.onDelete(this.props.entityId, this.props.tag) : void 0;
+  },
   render: function() {
     return div({
       draggable: true,
@@ -325,7 +364,8 @@ Tag = React.createFactory(React.createClass({
       style: {
         display: 'inline-block'
       }
-    }, this.props.tag.name), div({
+    }, this.props.tag.name), this.props.canBeDeleted ? div({
+      onClick: this.onDelete,
       style: {
         display: 'inline-block',
         position: 'relative',
@@ -337,7 +377,7 @@ Tag = React.createFactory(React.createClass({
         backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat'
       }
-    }));
+    }) : void 0);
   }
 }));
 
@@ -431,8 +471,10 @@ TagsList = React.createFactory(React.createClass({
             }
           }, Tag({
             tag: tag,
+            entityId: _this.props.entityId,
             actions: _this.props.actions,
-            helpers: _this.props.helpers
+            helpers: _this.props.helpers,
+            canBeDeleted: _this.props.canBeDeleted
           }));
         }
       };
@@ -20246,7 +20288,10 @@ addonEntry = {
         targetData = app.helpers.getTargetData(elem);
         return app.storage.getEntity(targetData.id, function(entity) {
           if (entity) {
-            return app.helpers.renredTagsList(entity.tags, container);
+            return app.helpers.renredTagsList({
+              entityId: entity.id,
+              tags: entity.tags
+            }, container);
           }
         });
       });

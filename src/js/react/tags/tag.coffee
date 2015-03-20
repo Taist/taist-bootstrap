@@ -24,6 +24,9 @@ Tag = React.createFactory React.createClass
       targetData = @props.helpers.getTargetData?( dropTarget )
       @props.actions?.assignTag?( targetData, @props.tag, dropTarget )
 
+  onDelete: () ->
+    @props.actions.onDelete?( @props.entityId, @props.tag )
+
   render: ->
     div {
       draggable: true
@@ -38,17 +41,19 @@ Tag = React.createFactory React.createClass
         display: 'inline-block'
     },
       div { style: display: 'inline-block' }, @props.tag.name
-      div {
-        style:
-          display: 'inline-block'
-          position: 'relative'
-          width: 10
-          height: 10
-          marginLeft: 2
-          cursor: 'pointer'
-          backgroundImage: AwesomeIcons.getURL 'remove'
-          backgroundSize: 'contain'
-          backgroundRepeat: 'no-repeat'
-      }
+      if @props.canBeDeleted
+        div {
+          onClick: @onDelete
+          style:
+            display: 'inline-block'
+            position: 'relative'
+            width: 10
+            height: 10
+            marginLeft: 2
+            cursor: 'pointer'
+            backgroundImage: AwesomeIcons.getURL 'remove'
+            backgroundSize: 'contain'
+            backgroundRepeat: 'no-repeat'
+        }
 
 module.exports = Tag

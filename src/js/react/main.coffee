@@ -32,4 +32,5 @@ GoogleTags = React.createFactory React.createClass
 module.exports =
   render: ->
     renderData = app.helpers.prepareTagListData app.storage.getTagsIds()
+    renderData.canBeDeleted = false
     React.render GoogleTags(renderData), app.elems.tagsList

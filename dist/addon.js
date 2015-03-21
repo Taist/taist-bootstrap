@@ -46,12 +46,15 @@ app = {
       }
       if (!id) {
         id = generateUUID();
+        appData.tags.push({
+          id: id,
+          name: name,
+          color: color
+        });
+      } else {
+        app.storage.getTagsMap()[id].name = name;
+        app.storage.getTagsMap()[id].color = color;
       }
-      appData.tags.push({
-        id: id,
-        name: name,
-        color: color
-      });
       return app.exapi.setUserData('googleTags', appData.tags).then(function() {
         return require('./react/main').render();
       });
@@ -332,7 +335,10 @@ findDropTarget = function(selector, coords) {
 };
 
 Tag = React.createFactory(React.createClass({
-  onDragStart: function(event) {},
+  onDragStart: function(event) {
+    event.dataTransfer.effectAllowed = 'move';
+    return event.dataTransfer.setData("text", this.props.tag.id);
+  },
   onDragEnd: function(event) {
     var dropTarget, targetData, _base, _ref;
     dropTarget = findDropTarget('[data-hveid]', {
@@ -416,8 +422,25 @@ TagsEditor = React.createFactory(React.createClass({
     });
     return tagName = React.findDOMNode(this.refs.tagName).value = '';
   },
+  onDragOver: function(event) {
+    return event.preventDefault();
+  },
+  onDrop: function(event) {
+    var tagId;
+    event.preventDefault();
+    tagId = event.dataTransfer.getData('text');
+    return this.setState({
+      tagId: tagId
+    }, (function(_this) {
+      return function() {
+        return React.findDOMNode(_this.refs.tagName).value = _this.props.tagsMap[tagId].name;
+      };
+    })(this));
+  },
   render: function() {
     return div({
+      onDragOver: this.onDragOver,
+      onDrop: this.onDrop,
       style: {
         marginTop: 12
       }

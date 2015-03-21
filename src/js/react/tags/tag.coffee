@@ -17,6 +17,8 @@ findDropTarget = (selector, coords) ->
 
 Tag = React.createFactory React.createClass
   onDragStart: (event) ->
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData "text", @props.tag.id
 
   onDragEnd: (event) ->
     dropTarget = findDropTarget '[data-hveid]', { x: event.clientX, y: event.clientY }

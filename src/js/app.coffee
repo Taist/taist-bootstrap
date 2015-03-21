@@ -5,7 +5,6 @@ generateUUID = require './helpers/generateUUID'
 
 Q = require 'q'
 
-
 appData =
   tags: []
   entities: {}
@@ -41,7 +40,10 @@ app =
     onSaveTag: (id, name, color = 'SkyBlue') ->
       unless id
         id = generateUUID()
-      appData.tags.push { id, name, color }
+        appData.tags.push { id, name, color }
+      else
+        app.storage.getTagsMap()[id].name = name
+        app.storage.getTagsMap()[id].color = color
 
       app.exapi.setUserData 'googleTags', appData.tags
       .then ->

@@ -18,8 +18,19 @@ TagsEditor = React.createFactory React.createClass
     @setState tagId: null
     tagName = React.findDOMNode(@refs.tagName).value = ''
 
+  onDragOver: (event) ->
+    event.preventDefault()
+
+  onDrop: (event) ->
+    event.preventDefault()
+    tagId = event.dataTransfer.getData 'text'
+    @setState { tagId }, =>
+      React.findDOMNode(@refs.tagName).value = @props.tagsMap[tagId].name
+
   render: ->
     div {
+      onDragOver: @onDragOver
+      onDrop: @onDrop
       style:
         marginTop: 12
     },

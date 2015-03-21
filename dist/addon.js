@@ -11,7 +11,8 @@ Q = require('q');
 
 appData = {
   tags: [],
-  entities: {}
+  entities: {},
+  tagsIndex: {}
 };
 
 app = {
@@ -104,14 +105,19 @@ app = {
     },
     assignTag: function(object, tag) {
       return app.storage.getEntity(object.id).then(function(savedEntity) {
-        var entity;
+        var entity, tagIndex;
         entity = extend({
           tags: []
         }, savedEntity, object);
         if (entity.tags.indexOf(tag.id) < 0) {
           entity.tags.push(tag.id);
+          tagIndex = app.storage.getTagIndex(tag.id);
+          tagIndex.push({
+            entityId: entity.id,
+            assignDate: Date.now()
+          });
           console.log('assignTag', JSON.stringify(entity));
-          return app.storage.setEntity(entity).then(function(entity) {
+          return Q.all([app.storage.setEntity(entity), app.exapi.setUserData('tagsIndex', appData.tagsIndex)]).spread(function(entity) {
             return Q.resolve(entity);
           });
         }
@@ -119,15 +125,31 @@ app = {
     },
     deleteTag: function(entityId, tag) {
       return app.storage.getEntity(entityId).then(function(entity) {
+        var tagIndex;
         entity.tags.splice(entity.tags.indexOf(tag.id), 1);
+        tagIndex = app.storage.getTagIndex(tag.id).filter(function(index) {
+          return index.entityId !== entity.id;
+        });
+        appData.tagsIndex[tag.id] = tagIndex;
         console.log('deleteTag', JSON.stringify(entity));
-        return app.storage.setEntity(entity);
+        return Q.all([app.storage.setEntity(entity), app.exapi.setUserData('tagsIndex', appData.tagsIndex)]).spread(function(entity) {
+          return Q.resolve(entity);
+        });
       });
     },
     getTags: function() {
-      return app.exapi.getUserData('googleTags').then(function(tags) {
-        return appData.tags = tags;
+      return Q.all([app.exapi.getUserData('googleTags'), app.exapi.getUserData('tagsIndex')]).spread(function(tags, tagsIndex) {
+        appData.tags = tags || [];
+        appData.tagsIndex = tagsIndex || {};
+        console.log(tags, tagsIndex);
+        return Q.resolve(tags);
       });
+    },
+    getTagIndex: function(id) {
+      if (!appData.tagsIndex[id]) {
+        appData.tagsIndex[id] = [];
+      }
+      return appData.tagsIndex[id];
     },
     getTagsArray: function() {
       return appData.tags;

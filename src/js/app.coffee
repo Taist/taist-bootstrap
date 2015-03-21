@@ -8,6 +8,7 @@ Q = require 'q'
 appData =
   tags: []
   entities: {}
+  tagsIndex: {}
 
 app =
   elems: {}
@@ -17,8 +18,11 @@ app =
 
   init: (api) ->
     app.api = api
+
     app.exapi.setUserData = Q.nbind app.api.userData.set, app.api.userData
     app.exapi.getUserData = Q.nbind app.api.userData.get, app.api.userData
+
+    # app.exapi.setPartialUserData = Q.nbind app.api.userData.setPart, app.api.userData
 
   actions:
     assignTag: (object, tag, element) ->
@@ -92,24 +96,54 @@ app =
 
         if entity.tags.indexOf(tag.id) < 0
           entity.tags.push tag.id
+
+          tagIndex = app.storage.getTagIndex tag.id
+          tagIndex.push { entityId: entity.id, assignDate: Date.now() }
+
           console.log 'assignTag', JSON.stringify entity
 
-          app.storage.setEntity entity
-          .then (entity) ->
+          Q.all [
+            app.storage.setEntity entity
+            app.exapi.setUserData 'tagsIndex', appData.tagsIndex
+            # app.exapi.setPartialUserData 'tagsIndex', tag.id, tagIndex
+          ]
+          .spread (entity) ->
             Q.resolve entity
+
 
     deleteTag: (entityId, tag) ->
       app.storage.getEntity entityId
       .then (entity) ->
-        entity.tags.splice entity.tags.indexOf(tag.id), 1
+        entity.tags.splice entity.tags.indexOf( tag.id ), 1
+
+        tagIndex = app.storage.getTagIndex( tag.id ).filter (index) ->
+          index.entityId isnt entity.id
+        appData.tagsIndex[tag.id] = tagIndex
 
         console.log 'deleteTag', JSON.stringify entity
-        app.storage.setEntity entity
+
+        Q.all [
+          app.storage.setEntity entity
+          app.exapi.setUserData 'tagsIndex', appData.tagsIndex
+        ]
+        .spread (entity) ->
+          Q.resolve entity
 
     getTags: () ->
-      app.exapi.getUserData 'googleTags'
-      .then (tags) ->
-        appData.tags = tags
+      Q.all [
+        app.exapi.getUserData 'googleTags'
+        app.exapi.getUserData 'tagsIndex'
+      ]
+      .spread (tags, tagsIndex) ->
+        appData.tags = tags or []
+        appData.tagsIndex = tagsIndex or {}
+        console.log tags, tagsIndex
+        Q.resolve tags
+
+    getTagIndex: (id) ->
+      unless appData.tagsIndex[id]
+        appData.tagsIndex[id] = []
+      appData.tagsIndex[id]
 
     getTagsArray: ->
       appData.tags

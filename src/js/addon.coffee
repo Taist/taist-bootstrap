@@ -5,14 +5,13 @@ DOMObserver = require './helpers/domObserver'
 addonEntry =
   start: (_taistApi, entryPoint) ->
     window._app = app
-    app.api = _taistApi
 
-    app.elems = {}
+    app.init _taistApi
 
-    app.storage.getTags (tags) ->
+    app.storage.getTags().then (tags) ->
 
       observer = new DOMObserver()
-      
+
       observer.waitElement '#rcnt', (elem) ->
         app.elems.tagsList = document.createElement 'div'
         elem.appendChild app.elems.tagsList
@@ -24,7 +23,8 @@ addonEntry =
         elem.insertBefore container, elem.querySelector 'div'
         targetData = app.helpers.getTargetData elem
 
-        app.storage.getEntity targetData.id, (entity) ->
+        app.storage.getEntity targetData.id
+        .then (entity) ->
           if entity
             app.helpers.renredTagsList {
               entityId: entity.id

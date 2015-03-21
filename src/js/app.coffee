@@ -3,23 +3,36 @@ React = require 'react'
 extend = require 'react/lib/Object.assign'
 generateUUID = require './helpers/generateUUID'
 
+Q = require 'q'
+
+
 appData =
   tags: []
   entities: {}
 
 app =
+  elems: {}
+
   api: null
+  exapi: {}
+
+  init: (api) ->
+    app.api = api
+    app.exapi.setUserData = Q.nbind app.api.userData.set, app.api.userData
+    app.exapi.getUserData = Q.nbind app.api.userData.get, app.api.userData
 
   actions:
     assignTag: (object, tag, element) ->
-      app.storage.assignTag object, tag, (entity) ->
+      app.storage.assignTag(object, tag)
+      .then (entity) ->
         app.helpers.renredTagsList {
           entityId: entity.id
           tags: entity.tags
         }, element.querySelector '.taistTags'
 
     deleteTag: (entityId, tag, element) ->
-      app.storage.deleteTag entityId, tag, (entity) ->
+      app.storage.deleteTag(entityId, tag)
+      .then (entity) ->
         app.helpers.renredTagsList {
           entityId: entity.id
           tags: entity.tags
@@ -29,7 +42,9 @@ app =
       unless id
         id = generateUUID()
       appData.tags.push { id, name, color }
-      app.api.userData.set 'googleTags', appData.tags, ->
+
+      app.exapi.setUserData 'googleTags', appData.tags
+      .then ->
         require('./react/main').render()
 
   helpers:
@@ -60,40 +75,39 @@ app =
       title: link.innerText
 
   storage:
-    setEntity: (entity, callback) ->
-      app.api.userData.set entity.id, entity, () ->
-        appData.entities[entity.id] = entity
-        callback entity
+    setEntity: (entity) ->
+      app.exapi.setUserData entity.id, entity
+      .then () ->
+        Q.resolve entity
 
-    getEntity: (id, callback) ->
-      entity = appData.entities[id] or null
-      if entity
-        callback entity
-      else
-        app.api.userData.get id, (error, entity) ->
-          callback entity or null
+    getEntity: (id) ->
+      Q.when( appData.entities[id] or app.exapi.getUserData id )
 
-    assignTag: (object, tag, callback) ->
-      app.storage.getEntity object.id, (savedEntity) ->
+    assignTag: (object, tag) ->
+      app.storage.getEntity object.id
+      .then (savedEntity) ->
         entity = extend({ tags: [] }, savedEntity, object)
 
         if entity.tags.indexOf(tag.id) < 0
           entity.tags.push tag.id
           console.log 'assignTag', JSON.stringify entity
 
-          app.storage.setEntity entity, callback
+          app.storage.setEntity entity
+          .then (entity) ->
+            Q.resolve entity
 
-    deleteTag: (entityId, tag, callback) ->
-      app.storage.getEntity entityId, (entity) ->
+    deleteTag: (entityId, tag) ->
+      app.storage.getEntity entityId
+      .then (entity) ->
         entity.tags.splice entity.tags.indexOf(tag.id), 1
 
         console.log 'deleteTag', JSON.stringify entity
-        app.storage.setEntity entity, callback
+        app.storage.setEntity entity
 
-    getTags: (callback) ->
-      app.api.userData.get 'googleTags', (error, tags) ->
+    getTags: () ->
+      app.exapi.getUserData 'googleTags'
+      .then (tags) ->
         appData.tags = tags
-        callback tags
 
     getTagsArray: ->
       appData.tags

@@ -328,10 +328,6 @@ GoogleTags = React.createFactory(React.createClass({
     tagsListRect = getElementRect(document.querySelector('.appbar'));
     return div({
       style: {
-        position: 'fixed',
-        top: tagsListRect.top,
-        right: '9.6%',
-        width: '32%',
         padding: 8,
         paddingTop: 7,
         fontFamily: 'arial, sans-serif',
@@ -22373,9 +22369,13 @@ addonEntry = {
     return app.storage.getTags().then(function(tags) {
       var observer;
       observer = new DOMObserver();
-      observer.waitElement('#rcnt', function(elem) {
+      observer.waitElement('#rhs_block', function(elem) {
         app.elems.tagsList = document.createElement('div');
-        elem.appendChild(app.elems.tagsList);
+        if (elem.firstChild) {
+          elem.insertBefore(app.elems.tagsList, elem.firstChild);
+        } else {
+          elem.appendChild(app.elems.tagsList);
+        }
         return require('./react/main').render();
       });
       return observer.waitElement('[data-hveid]', function(elem) {

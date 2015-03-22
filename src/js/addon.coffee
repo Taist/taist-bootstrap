@@ -12,9 +12,12 @@ addonEntry =
 
       observer = new DOMObserver()
 
-      observer.waitElement '#rcnt', (elem) ->
+      observer.waitElement '#rhs_block', (elem) ->
         app.elems.tagsList = document.createElement 'div'
-        elem.appendChild app.elems.tagsList
+        if elem.firstChild
+          elem.insertBefore app.elems.tagsList, elem.firstChild
+        else
+          elem.appendChild app.elems.tagsList
         require('./react/main').render()
 
       observer.waitElement '[data-hveid]', (elem) ->

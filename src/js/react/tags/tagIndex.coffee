@@ -4,7 +4,6 @@ React = require 'react'
 
 TagsIndex = React.createFactory React.createClass
   render: ->
-    console.log @props
     div {
       style:
         marginTop: 12

@@ -4,6 +4,8 @@ React = require 'react'
 
 AwesomeIcons = require '../taist/awesomeIcons'
 
+webColors = require '../taist/webColors'
+
 getElementRect = require '../../helpers/getElementRect'
 
 findDropTarget = (selector, coords) ->
@@ -35,11 +37,13 @@ Tag = React.createFactory React.createClass
       onDragStart: @onDragStart
       onDragEnd: @onDragEnd
       style:
-        padding: "1px 4px"
+        padding: '1px 4px'
         borderRadius: 4
         border: "1px solid #{@props.tag.color}"
         backgroundColor: @props.tag.color
+        color: if webColors[@props.tag.color].isLight then 'black' else 'white'
         marginRight: 6
+        marginBottom: 4
         display: 'inline-block'
     },
       div { style: display: 'inline-block' }, @props.tag.name

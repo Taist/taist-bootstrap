@@ -6,6 +6,7 @@ React = require 'react'
 
 TagsList = require './tags/tagsList'
 TagsEditor = require './tags/tagsEditor'
+TagIndex = require './tags/tagIndex'
 
 getElementRect = require './helpers/getElementRect'
 
@@ -28,9 +29,13 @@ GoogleTags = React.createFactory React.createClass
       div { style: padding: 4 },
         TagsList @props
         TagsEditor @props
+        console.log @props
+        if @props.tagIndex
+          TagIndex { index: @props.tagIndex }
 
 module.exports =
   render: ->
-    renderData = app.helpers.prepareTagListData app.storage.getTagsIds()
-    renderData.canBeDeleted = false
-    React.render GoogleTags(renderData), app.elems.tagsList
+    app.helpers.prepareTagListData app.storage.getTagsIds()
+    .then (renderData) ->
+      renderData.canBeDeleted = false
+      React.render GoogleTags(renderData), app.elems.tagsList

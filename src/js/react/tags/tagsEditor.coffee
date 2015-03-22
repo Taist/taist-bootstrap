@@ -15,8 +15,9 @@ TagsEditor = React.createFactory React.createClass
     @onCancel()
 
   onCancel: ->
-    @setState tagId: null
     tagName = React.findDOMNode(@refs.tagName).value = ''
+    @setState tagId: null, =>
+      @props.actions.onSelectTag?( null )
 
   onDragOver: (event) ->
     event.preventDefault()
@@ -26,6 +27,7 @@ TagsEditor = React.createFactory React.createClass
     tagId = event.dataTransfer.getData 'text'
     @setState { tagId }, =>
       React.findDOMNode(@refs.tagName).value = @props.tagsMap[tagId].name
+      @props.actions.onSelectTag?( @state.tagId )
 
   render: ->
     div {
@@ -37,6 +39,7 @@ TagsEditor = React.createFactory React.createClass
       input {
         ref: 'tagName'
         type: 'text'
+        placeholder: 'Drop tag here'
         style:
           border: '1px solid silver'
           height: 18

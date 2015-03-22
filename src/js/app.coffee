@@ -12,6 +12,7 @@ appData =
 
 app =
   elems: {}
+  selectedTagId: null
 
   api: null
   exapi: {}
@@ -53,26 +54,34 @@ app =
       .then ->
         require('./react/main').render()
 
+    onSelectTag: (id) ->
+      app.selectedTagId = id
+      require('./react/main').render()
+
   helpers:
     renredTagsList: (options, container) ->
       TagList = require('./react/tags/tagsList')
 
-      renderData = app.helpers.prepareTagListData options.tags
-      extend renderData, {
-        entityId: options.entityId
-        actions:
-          onDelete: (entityId, tag) ->
-            app.actions.deleteTag entityId, tag, container
-      }
+      app.helpers.prepareTagListData options.tags
+      .then (renderData) ->
+        extend renderData, {
+          entityId: options.entityId
+          actions:
+            onDelete: (entityId, tag) ->
+              app.actions.deleteTag entityId, tag, container
+        }
 
-      React.render ( TagList renderData ), container
+        React.render ( TagList renderData ), container
 
     prepareTagListData: (tags) ->
-      tagsIds: tags
-      tagsMap: app.storage.getTagsMap()
-      actions: app.actions
-      helpers: app.helpers
-      canBeDeleted: true
+      Q.when if app.selectedTagId then app.storage.prepareTagIndex(app.selectedTagId) else null
+      .then (index) ->
+        tagsIds: tags
+        tagsMap: app.storage.getTagsMap()
+        tagIndex: index
+        actions: app.actions
+        helpers: app.helpers
+        canBeDeleted: true
 
     getTargetData: (elem) ->
       link = elem.querySelector 'h3 a'
@@ -144,6 +153,16 @@ app =
       unless appData.tagsIndex[id]
         appData.tagsIndex[id] = []
       appData.tagsIndex[id]
+
+    prepareTagIndex: (id) ->
+      indexData = {}
+      Q.all app.storage.getTagIndex(id).map (idx) ->
+        indexData[idx.entityId] = idx
+        app.storage.getEntity(idx.entityId)
+      .then (entities) ->
+        entities.map (entity) ->
+          entity.assignDate = indexData[entity.id].assignDate
+          entity
 
     getTagsArray: ->
       appData.tags

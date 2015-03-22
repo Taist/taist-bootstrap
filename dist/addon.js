@@ -135,7 +135,7 @@ app = {
         if (entity.tags.indexOf(tag.id) < 0) {
           entity.tags.push(tag.id);
           tagIndex = app.storage.getTagIndex(tag.id);
-          matches = location.href.match(/[&?]q=([^&]+)/);
+          matches = location.href.match(/[&?#]q=([^&#]+)/);
           if (matches) {
             query = decodeURIComponent(matches[1]);
           }
@@ -185,6 +185,8 @@ app = {
         indexData[idx.entityId] = idx;
         return app.storage.getEntity(idx.entityId);
       })).then(function(entities) {
+        console.log(indexData);
+        console.log(entities);
         return entities.map(function(entity) {
           entity.assignDate = indexData[entity.id].assignDate;
           entity.query = indexData[entity.id].query;

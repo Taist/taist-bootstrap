@@ -118,7 +118,7 @@ app =
           entity.tags.push tag.id
 
           tagIndex = app.storage.getTagIndex tag.id
-          matches = location.href.match /[&?]q=([^&]+)/
+          matches = location.href.match /[&?#]q=([^&#]+)/
           if matches
             query = decodeURIComponent matches[1]
 
@@ -174,6 +174,8 @@ app =
         indexData[idx.entityId] = idx
         app.storage.getEntity(idx.entityId)
       .then (entities) ->
+        console.log indexData
+        console.log entities
         entities.map (entity) ->
           entity.assignDate = indexData[entity.id].assignDate
           entity.query = indexData[entity.id].query

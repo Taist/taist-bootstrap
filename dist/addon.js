@@ -406,6 +406,8 @@ Tag = React.createFactory(React.createClass({
     return typeof (_base = this.props.actions).onDelete === "function" ? _base.onDelete(this.props.entityId, this.props.tag) : void 0;
   },
   render: function() {
+    var color;
+    color = webColors[this.props.tag.color].isLight ? 'black' : 'white';
     return div({
       draggable: true,
       onDragStart: this.onDragStart,
@@ -415,7 +417,7 @@ Tag = React.createFactory(React.createClass({
         borderRadius: 4,
         border: "1px solid " + this.props.tag.color,
         backgroundColor: this.props.tag.color,
-        color: webColors[this.props.tag.color].isLight ? 'black' : 'white',
+        color: color,
         marginRight: 6,
         marginBottom: 4,
         display: 'inline-block'
@@ -433,7 +435,7 @@ Tag = React.createFactory(React.createClass({
         height: 10,
         marginLeft: 2,
         cursor: 'pointer',
-        backgroundImage: AwesomeIcons.getURL('remove'),
+        backgroundImage: AwesomeIcons.getURL('remove', color),
         backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat'
       }
@@ -639,6 +641,9 @@ icons = {
   },
   gray40: {
     gear: 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACZElEQVR4nMXXS4iOURgH8N8Y10QWcs0lyaiJDDYWFrK2kAUjFi5NUXauuSwUuWQjNoSlLChsiBBZIQsbM0guEYPIpVxmWJx3eH3fOd9l5mP+dfo6//Oc9/l/532e8zxvXUtLi95En1713k0Bg/AJP3OjA2P+l4BGDI48p/FfCNiArQV2kxO2Uwrma7G7nI++Cb4OR7A6m89DM95hTmLPXBzFQBzHooyfhGX4UY2AwznnMB938R0TE3sWZ0K/FNgszn6XorMSASuxJsKPTTjOY0QJcXewv3Ah9n4eClFdazyKkTEB17Gpxs4P4kylAuAALtXI+T2sTy2WSpFRCb4D+9CAAZggnNjnhP1o1Kec5INwFKZnD56JaRH7TiG9zua4p5mgK7im+JIaLqT0ZbTiPj7EBLRhSEpphhMFzvO4jV3C5VOI5dmAbxiH1/z9Cso5h5M9XIf+GNo1qbYWvOjhehGqFVCu4lVdEfMC3lZg39zDdUIg/86YfBCOx1Shqs0Sz90VOC8eiLOFyhnDOeGCaxXuhZddC3UlWrK7mBHhO4SL6hgeC+nbjB2KUxDeC1H/KeYkVQ3hWUJAPTZmoxK8kijFpINwHRZU6KAcGnCoGgGzhCOuJVb5u78oKWAi+tVYAIlWLibgNPZG+HYh6EqhHQ8i/AVsr1QAbMae3PwmmoR/sS+x56wQ7U04leMvYqHQzhWhVBZswXOMxE5/IvmqeAbcwtdsLMENoVRvEwpQFKUEEJrTQrQlbB9WsLcI3fkweYKPBdxPoRxXjXInEEOH0OsPy3FfdKMSdlcAvMlGj9HrX8e/AKOwc1tUSUWPAAAAAElFTkSuQmCC'
+  },
+  white: {
+    remove: 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABS0lEQVR4nO2XsUoDQRRF72qrWCniR2irHyDaSiS2FvoBgn6ANinyL/Z+iJUiiJWghYIgJHosdoMhuG/umCxRyIXt5r1zGOYNswWgaWZuqvSZwH8QWJd0LelRUsvsuSnpVtKDpO3kaqDu2wCe+E4fOAjWC9gCXodq3oHdqMaFOxKj8GGJnVyBmx8aRRJ18EFegEVXoEg0G5VIwQE+gVVXQMBhVZSSODfgABc1nPAQHhsSTjoBIxSYhEQIdwTGkUjCXYHfSFjwHAEBXRN+mdHTFnBGbZAesD9JgRx4tkQT8CyJpuC2xLjwK9LT0QNauQL3BryLP6JvwJIrUADPJty9J/rAsisgYI9y6xy4I3FSUxMewnZl7sAjibOoJjWGbcoXDfjX6xHl7n0Ap6n1BST/jFYkLUi6Mx+lkrQmab56mIZxBBrNn/8vmAk0ni96nac+xLxnDgAAAABJRU5ErkJggg=='
   }
 };
 

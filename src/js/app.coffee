@@ -122,7 +122,11 @@ app =
           if matches
             query = decodeURIComponent matches[1]
 
-          tagIndex.push { entityId: entity.id, assignDate: Date.now(), query: query }
+          tagIndex.push
+            entityId: entity.id
+            assignDate: Date.now()
+            query: query
+            source: location.host
 
           console.log 'assignTag', JSON.stringify entity
 
@@ -174,8 +178,6 @@ app =
         indexData[idx.entityId] = idx
         app.storage.getEntity(idx.entityId)
       .then (entities) ->
-        console.log indexData
-        console.log entities
         entities.map (entity) ->
           entity.assignDate = indexData[entity.id].assignDate
           entity.query = indexData[entity.id].query

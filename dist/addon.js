@@ -142,7 +142,8 @@ app = {
           tagIndex.push({
             entityId: entity.id,
             assignDate: Date.now(),
-            query: query
+            query: query,
+            source: location.host
           });
           console.log('assignTag', JSON.stringify(entity));
           return Q.all([app.storage.setEntity(entity), app.exapi.setUserData('tagsIndex', appData.tagsIndex)]).spread(function(entity) {
@@ -185,8 +186,6 @@ app = {
         indexData[idx.entityId] = idx;
         return app.storage.getEntity(idx.entityId);
       })).then(function(entities) {
-        console.log(indexData);
-        console.log(entities);
         return entities.map(function(entity) {
           entity.assignDate = indexData[entity.id].assignDate;
           entity.query = indexData[entity.id].query;
@@ -480,7 +479,6 @@ _ref = React.DOM, div = _ref.div, a = _ref.a;
 
 TagsIndex = React.createFactory(React.createClass({
   render: function() {
-    console.log(this.props);
     return div({
       style: {
         marginTop: 12

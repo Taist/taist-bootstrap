@@ -107,7 +107,11 @@ app =
           entity.tags.push tag.id
 
           tagIndex = app.storage.getTagIndex tag.id
-          tagIndex.push { entityId: entity.id, assignDate: Date.now() }
+          matches = location.href.match /[&?]q=([^&]+)/
+          if matches
+            query = decodeURIComponent matches[1]
+
+          tagIndex.push { entityId: entity.id, assignDate: Date.now(), query: query }
 
           console.log 'assignTag', JSON.stringify entity
 
@@ -161,6 +165,7 @@ app =
       .then (entities) ->
         entities.map (entity) ->
           entity.assignDate = indexData[entity.id].assignDate
+          entity.query = indexData[entity.id].query
           entity
 
     getTagsArray: ->

@@ -114,16 +114,21 @@ app = {
     },
     assignTag: function(object, tag) {
       return app.storage.getEntity(object.id).then(function(savedEntity) {
-        var entity, tagIndex;
+        var entity, matches, query, tagIndex;
         entity = extend({
           tags: []
         }, savedEntity, object);
         if (entity.tags.indexOf(tag.id) < 0) {
           entity.tags.push(tag.id);
           tagIndex = app.storage.getTagIndex(tag.id);
+          matches = location.href.match(/[&?]q=([^&]+)/);
+          if (matches) {
+            query = decodeURIComponent(matches[1]);
+          }
           tagIndex.push({
             entityId: entity.id,
-            assignDate: Date.now()
+            assignDate: Date.now(),
+            query: query
           });
           console.log('assignTag', JSON.stringify(entity));
           return Q.all([app.storage.setEntity(entity), app.exapi.setUserData('tagsIndex', appData.tagsIndex)]).spread(function(entity) {
@@ -168,6 +173,7 @@ app = {
       })).then(function(entities) {
         return entities.map(function(entity) {
           entity.assignDate = indexData[entity.id].assignDate;
+          entity.query = indexData[entity.id].query;
           return entity;
         });
       });
@@ -453,6 +459,7 @@ TagsIndex = React.createFactory(React.createClass({
     }, this.props.index.map(function(entity) {
       return div({
         key: entity.id,
+        title: "found for query: " + entity.query,
         style: {
           marginBottom: 4
         }

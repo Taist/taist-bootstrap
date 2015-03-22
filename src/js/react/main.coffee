@@ -8,7 +8,10 @@ TagsList = require './tags/tagsList'
 TagsEditor = require './tags/tagsEditor'
 TagIndex = require './tags/tagIndex'
 
+Alert = require './taist/Alert'
+
 getElementRect = require './helpers/getElementRect'
+extend = require 'react/lib/Object.assign'
 
 GoogleTags = React.createFactory React.createClass
   render: ->
@@ -16,26 +19,26 @@ GoogleTags = React.createFactory React.createClass
 
     div {
       style:
-        # position: 'fixed'
-        # top: tagsListRect.top
-        # right: '9.6%'
-        # width: '32%'
         padding: 8
         paddingTop: 7
         fontFamily: 'arial, sans-serif'
         fontSize: 13
     },
+      if @props.message
+        Alert {
+          message: @props.message
+          onCancel: @props.onAlertCancel
+          onAction: @props.onAlertAction  
+        }
       div { style: padding: 4 }, 'Tags by Tai.st'
       div { style: padding: 4 },
         TagsList @props
         TagsEditor @props
-        console.log @props
         if @props.tagIndex
           TagIndex { index: @props.tagIndex }
 
 module.exports =
-  render: ->
+  render: (options = {}) ->
     app.helpers.prepareTagListData app.storage.getTagsIds()
     .then (renderData) ->
-      renderData.canBeDeleted = false
-      React.render GoogleTags(renderData), app.elems.tagsList
+      React.render GoogleTags( extend renderData, options ), app.elems.tagsList

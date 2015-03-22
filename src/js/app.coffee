@@ -54,6 +54,17 @@ app =
       .then ->
         require('./react/main').render()
 
+    onDelete: (entityId, tag) ->
+      require('./react/main').render
+        message: 'Do you really want to remove tag?'
+        onAlertCancel: ->
+          require('./react/main').render()
+        onAlertAction: ->
+          appData.tags.splice appData.tags.indexOf( tag ), 1
+          app.exapi.setUserData 'googleTags', appData.tags
+          .then ->
+            require('./react/main').render()
+
     onSelectTag: (id) ->
       app.selectedTagId = id
       require('./react/main').render()

@@ -20,7 +20,7 @@ addonEntry =
           elem.appendChild app.elems.tagsList
         require('./react/main').render()
 
-      observer.waitElement '[data-hveid]', (elem) ->
+      observer.waitElement '#search div[data-hveid]', (elem) ->
         container = document.createElement 'div'
         container.className = 'taistTags'
         elem.insertBefore container, elem.querySelector 'div'

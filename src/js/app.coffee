@@ -146,7 +146,6 @@ app =
       .spread (tags, tagsIndex) ->
         appData.tags = tags or []
         appData.tagsIndex = tagsIndex or {}
-        console.log tags, tagsIndex
         Q.resolve tags
 
     getTagIndex: (id) ->

@@ -150,7 +150,6 @@ app = {
       return Q.all([app.exapi.getUserData('googleTags'), app.exapi.getUserData('tagsIndex')]).spread(function(tags, tagsIndex) {
         appData.tags = tags || [];
         appData.tagsIndex = tagsIndex || {};
-        console.log(tags, tagsIndex);
         return Q.resolve(tags);
       });
     },
@@ -22378,7 +22377,7 @@ addonEntry = {
         }
         return require('./react/main').render();
       });
-      return observer.waitElement('[data-hveid]', function(elem) {
+      return observer.waitElement('#search div[data-hveid]', function(elem) {
         var container, targetData;
         container = document.createElement('div');
         container.className = 'taistTags';

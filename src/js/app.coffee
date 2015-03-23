@@ -5,9 +5,33 @@ generateUUID = require './helpers/generateUUID'
 
 Q = require 'q'
 
+defaultTags = [
+  {
+    color: "SkyBlue"
+    id: "taist"
+    name: "tai.st"
+  }
+]
+
+defaultIndex =
+  taist: [
+    { entityId: "http://www.tai.st/", assignDate: 1427020191562, query: 'taist' }
+    { entityId: "http://habrahabr.ru/company/taist/", assignDate: 1427020224908, query: 'taist' }
+  ]
+
+defaultEntities =
+  "http://www.tai.st/":
+    tags: ["taist"]
+    id: "http://www.tai.st/"
+    title: "Taist"
+  "http://habrahabr.ru/company/taist/":
+    tags: ["taist"]
+    id: "http://habrahabr.ru/company/taist/"
+    title: "Taist / Хабрахабр"
+
 appData =
   tags: []
-  entities: {}
+  entities: defaultEntities
   tagsIndex: {}
 
 app =
@@ -163,8 +187,8 @@ app =
         app.exapi.getUserData 'tagsIndex'
       ]
       .spread (tags, tagsIndex) ->
-        appData.tags = tags or []
-        appData.tagsIndex = tagsIndex or {}
+        appData.tags = tags or defaultTags
+        appData.tagsIndex = tagsIndex or defaultIndex
         Q.resolve tags
 
     getTagIndex: (id) ->

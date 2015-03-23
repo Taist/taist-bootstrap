@@ -1,5 +1,5 @@
 function init(){var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Q, React, app, appData, extend, generateUUID;
+var Q, React, app, appData, defaultEntities, defaultIndex, defaultTags, extend, generateUUID;
 
 React = require('react');
 
@@ -9,9 +9,44 @@ generateUUID = require('./helpers/generateUUID');
 
 Q = require('q');
 
+defaultTags = [
+  {
+    color: "SkyBlue",
+    id: "taist",
+    name: "tai.st"
+  }
+];
+
+defaultIndex = {
+  taist: [
+    {
+      entityId: "http://www.tai.st/",
+      assignDate: 1427020191562,
+      query: 'taist'
+    }, {
+      entityId: "http://habrahabr.ru/company/taist/",
+      assignDate: 1427020224908,
+      query: 'taist'
+    }
+  ]
+};
+
+defaultEntities = {
+  "http://www.tai.st/": {
+    tags: ["taist"],
+    id: "http://www.tai.st/",
+    title: "Taist"
+  },
+  "http://habrahabr.ru/company/taist/": {
+    tags: ["taist"],
+    id: "http://habrahabr.ru/company/taist/",
+    title: "Taist / Хабрахабр"
+  }
+};
+
 appData = {
   tags: [],
-  entities: {},
+  entities: defaultEntities,
   tagsIndex: {}
 };
 
@@ -168,8 +203,8 @@ app = {
     },
     getTags: function() {
       return Q.all([app.exapi.getUserData('googleTags'), app.exapi.getUserData('tagsIndex')]).spread(function(tags, tagsIndex) {
-        appData.tags = tags || [];
-        appData.tagsIndex = tagsIndex || {};
+        appData.tags = tags || defaultTags;
+        appData.tagsIndex = tagsIndex || defaultIndex;
         return Q.resolve(tags);
       });
     },

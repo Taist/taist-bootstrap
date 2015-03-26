@@ -97,12 +97,9 @@ app =
 
       app.helpers.prepareTagListData options.tags
       .then (renderData) ->
-        extend renderData, {
-          entityId: options.entityId
-          actions:
-            onDelete: (entityId, tag) ->
-              app.actions.deleteTag entityId, tag, container
-        }
+        extend renderData, entityId: options.entityId
+        extend renderData.actions, onDelete: (entityId, tag) ->
+          app.actions.deleteTag entityId, tag, container
 
         React.render ( TagList renderData ), container
 

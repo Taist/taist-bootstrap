@@ -19,46 +19,26 @@ TagsEditor = React.createFactory React.createClass
     @setState tagId: null, =>
       @props.actions.onSelectTag?( null )
 
-  onDragOver: (event) ->
-    event.preventDefault()
-
-  onDrop: (event) ->
-    event.preventDefault()
-    tagId = event.dataTransfer.getData 'text'
-    @setState { tagId }, =>
-      React.findDOMNode(@refs.tagName).value = @props.tagsMap[tagId].name
-      @props.actions.onSelectTag?( @state.tagId )
+  onKeyDown: (event) ->
+    switch event.key
+      when 'Enter' then @onSave()
+      when 'Escape' then @onCancel()
 
   render: ->
     div {
-      onDragOver: @onDragOver
-      onDrop: @onDrop
       style:
         marginTop: 12
     },
       div {},
         input {
+          onKeyDown: @onKeyDown
           ref: 'tagName'
           type: 'text'
-          placeholder: 'Drop tag here'
+          placeholder: 'Create new tag'
           style:
             border: '1px solid silver'
             height: 18
             paddingLeft: 4
         }
-        button {
-          onClick: @onSave
-          style:
-            marginLeft: 6
-            height: 22
-            width: 60
-        }, 'Save'
-        button {
-          onClick: @onCancel
-          style:
-            marginLeft: 6
-            height: 22
-            width: 60
-        }, 'Cancel'
 
 module.exports = TagsEditor

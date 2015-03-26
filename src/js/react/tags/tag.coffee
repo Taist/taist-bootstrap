@@ -29,9 +29,13 @@ Tag = React.createFactory React.createClass
   onDelete: () ->
     @props.actions.onDelete?( @props.entityId, @props.tag )
 
+  onSelectTag: () ->
+    @props.actions.onSelectTag?( @props.tag.id )
+
   render: ->
     div {
       draggable: true
+      onClick: @onSelectTag
       onDragStart: @onDragStart
       onDragEnd: @onDragEnd
       style:

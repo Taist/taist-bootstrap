@@ -115,11 +115,11 @@ app = {
       TagList = require('./react/tags/tagsList');
       return app.helpers.prepareTagListData(options.tags).then(function(renderData) {
         extend(renderData, {
-          entityId: options.entityId,
-          actions: {
-            onDelete: function(entityId, tag) {
-              return app.actions.deleteTag(entityId, tag, container);
-            }
+          entityId: options.entityId
+        });
+        extend(renderData.actions, {
+          onDelete: function(entityId, tag) {
+            return app.actions.deleteTag(entityId, tag, container);
           }
         });
         return React.render(TagList(renderData), container);
@@ -457,9 +457,14 @@ Tag = React.createFactory(React.createClass({
     var _base;
     return typeof (_base = this.props.actions).onDelete === "function" ? _base.onDelete(this.props.entityId, this.props.tag) : void 0;
   },
+  onSelectTag: function() {
+    var _base;
+    return typeof (_base = this.props.actions).onSelectTag === "function" ? _base.onSelectTag(this.props.tag.id) : void 0;
+  },
   render: function() {
     return div({
       draggable: true,
+      onClick: this.onSelectTag,
       onDragStart: this.onDragStart,
       onDragEnd: this.onDragEnd,
       style: {
@@ -560,54 +565,30 @@ TagsEditor = React.createFactory(React.createClass({
       };
     })(this));
   },
-  onDragOver: function(event) {
-    return event.preventDefault();
-  },
-  onDrop: function(event) {
-    var tagId;
-    event.preventDefault();
-    tagId = event.dataTransfer.getData('text');
-    return this.setState({
-      tagId: tagId
-    }, (function(_this) {
-      return function() {
-        var _base;
-        React.findDOMNode(_this.refs.tagName).value = _this.props.tagsMap[tagId].name;
-        return typeof (_base = _this.props.actions).onSelectTag === "function" ? _base.onSelectTag(_this.state.tagId) : void 0;
-      };
-    })(this));
+  onKeyDown: function(event) {
+    switch (event.key) {
+      case 'Enter':
+        return this.onSave();
+      case 'Escape':
+        return this.onCancel();
+    }
   },
   render: function() {
     return div({
-      onDragOver: this.onDragOver,
-      onDrop: this.onDrop,
       style: {
         marginTop: 12
       }
     }, div({}, input({
+      onKeyDown: this.onKeyDown,
       ref: 'tagName',
       type: 'text',
-      placeholder: 'Drop tag here',
+      placeholder: 'Create new tag',
       style: {
         border: '1px solid silver',
         height: 18,
         paddingLeft: 4
       }
-    }), button({
-      onClick: this.onSave,
-      style: {
-        marginLeft: 6,
-        height: 22,
-        width: 60
-      }
-    }, 'Save'), button({
-      onClick: this.onCancel,
-      style: {
-        marginLeft: 6,
-        height: 22,
-        width: 60
-      }
-    }, 'Cancel')));
+    })));
   }
 }));
 

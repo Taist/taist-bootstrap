@@ -4,8 +4,6 @@ React = require 'react'
 
 AwesomeIcons = require '../taist/awesomeIcons'
 
-webColors = require '../taist/webColors'
-
 getElementRect = require '../../helpers/getElementRect'
 
 findDropTarget = (selector, coords) ->
@@ -32,8 +30,6 @@ Tag = React.createFactory React.createClass
     @props.actions.onDelete?( @props.entityId, @props.tag )
 
   render: ->
-    color = if webColors[@props.tag.color].isLight then 'black' else 'white'
-
     div {
       draggable: true
       onDragStart: @onDragStart
@@ -41,9 +37,8 @@ Tag = React.createFactory React.createClass
       style:
         padding: '1px 4px'
         borderRadius: 4
-        border: "1px solid #{@props.tag.color}"
-        backgroundColor: @props.tag.color
-        color: color
+        border: '1px solid SkyBlue'
+        backgroundColor: 'SkyBlue'
         marginRight: 6
         marginBottom: 4
         display: 'inline-block'
@@ -59,7 +54,7 @@ Tag = React.createFactory React.createClass
             height: 10
             marginLeft: 2
             cursor: 'pointer'
-            backgroundImage: AwesomeIcons.getURL 'remove', color
+            backgroundImage: AwesomeIcons.getURL 'remove'
             backgroundSize: 'contain'
             backgroundRepeat: 'no-repeat'
         }

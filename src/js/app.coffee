@@ -7,7 +7,6 @@ Q = require 'q'
 
 defaultTags = [
   {
-    color: "SkyBlue"
     id: "taist"
     name: "tai.st"
   }
@@ -66,13 +65,12 @@ app =
           tags: entity.tags
         }, element
 
-    onSaveTag: (id, name, color = 'SkyBlue') ->
+    onSaveTag: (id, name) ->
       unless id
         id = generateUUID()
-        appData.tags.push { id, name, color }
+        appData.tags.push { id, name }
       else
         app.storage.getTagsMap()[id].name = name
-        app.storage.getTagsMap()[id].color = color
 
       app.exapi.setUserData 'googleTags', appData.tags
       .then ->

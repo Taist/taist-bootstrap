@@ -15,7 +15,7 @@ TagsList = React.createFactory React.createClass
             style: display: 'inline-block'
           }, Tag {
             tag: tag
-            entityId: @props.entityId 
+            entityId: @props.entityId
             actions: @props.actions
             helpers: @props.helpers
             canBeDeleted: @props.canBeDeleted

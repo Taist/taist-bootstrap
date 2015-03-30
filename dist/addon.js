@@ -385,10 +385,12 @@ GoogleTags = React.createFactory(React.createClass({
     tagsListRect = getElementRect(document.querySelector('.appbar'));
     return div({
       style: {
+        width: '40%',
+        position: 'fixed',
         padding: 8,
-        paddingTop: 7,
         fontFamily: 'arial, sans-serif',
-        fontSize: 13
+        fontSize: 13,
+        border: '1px solid silver'
       }
     }, this.props.message ? Alert({
       message: this.props.message,

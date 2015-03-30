@@ -9,7 +9,6 @@ addonEntry =
     app.init _taistApi
 
     app.storage.getTags().then (tags) ->
-
       observer = new DOMObserver()
 
       observer.waitElement '#rhs_block', (elem) ->

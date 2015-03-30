@@ -28,11 +28,13 @@ Tag = React.createFactory React.createClass
       targetData = @props.helpers.getTargetData?( dropTarget )
       @props.actions?.assignTag?( targetData, @props.tag, dropTarget )
 
-  onDelete: () ->
+  onDelete: (event) ->
     @props.actions.onDelete?( @props.entityId, @props.tag )
+    event.stopPropagation()
 
   render: ->
-    color = if webColors[@props.tag.color].isLight then 'black' else 'white'
+    backgroundColor = @props.tag.color or 'SkyBlue'
+    color = if webColors[backgroundColor].isLight then 'black' else 'white'
 
     div {
       draggable: true
@@ -41,8 +43,8 @@ Tag = React.createFactory React.createClass
       style:
         padding: '1px 4px'
         borderRadius: 4
-        border: "1px solid #{@props.tag.color}"
-        backgroundColor: @props.tag.color
+        border: "1px solid #{backgroundColor}"
+        backgroundColor: backgroundColor
         color: color
         marginRight: 6
         marginBottom: 4

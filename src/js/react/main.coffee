@@ -28,7 +28,7 @@ GoogleTags = React.createFactory React.createClass
         Alert {
           message: @props.message
           onCancel: @props.onAlertCancel
-          onAction: @props.onAlertAction  
+          onAction: @props.onAlertAction
         }
       div { style: padding: 4 }, 'Tags by Tai.st'
       div { style: padding: 4 },

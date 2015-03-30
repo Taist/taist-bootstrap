@@ -121,11 +121,11 @@ app = {
       TagList = require('./react/tags/tagsList');
       return app.helpers.prepareTagListData(options.tags).then(function(renderData) {
         extend(renderData, {
-          entityId: options.entityId,
-          actions: {
-            onDelete: function(entityId, tag) {
-              return app.actions.deleteTag(entityId, tag, container);
-            }
+          entityId: options.entityId
+        });
+        extend(renderData.actions, {
+          onDelete: function(entityId, tag) {
+            return app.actions.deleteTag(entityId, tag, container);
           }
         });
         return React.render(TagList(renderData), container);
@@ -133,14 +133,14 @@ app = {
     },
     prepareTagListData: function(tags) {
       return Q.when(app.selectedTagId ? app.storage.prepareTagIndex(app.selectedTagId) : null).then(function(index) {
-        return {
+        return extend({}, {
           tagsIds: tags,
           tagsMap: app.storage.getTagsMap(),
           tagIndex: index,
-          actions: app.actions,
+          actions: extend({}, app.actions),
           helpers: app.helpers,
           canBeDeleted: true
-        };
+        });
       });
     },
     getTargetData: function(elem) {
@@ -203,8 +203,13 @@ app = {
     },
     getTags: function() {
       return Q.all([app.exapi.getUserData('googleTags'), app.exapi.getUserData('tagsIndex')]).spread(function(tags, tagsIndex) {
-        appData.tags = tags || defaultTags;
-        appData.tagsIndex = tagsIndex || defaultIndex;
+        if (!tags) {
+          appData.tags = defaultTags;
+          appData.tagsIndex = defaultIndex;
+        } else {
+          appData.tags = tags;
+          appData.tagsIndex = tagsIndex;
+        }
         return Q.resolve(tags);
       });
     },
@@ -461,13 +466,17 @@ Tag = React.createFactory(React.createClass({
       return (_ref = this.props.actions) != null ? typeof _ref.assignTag === "function" ? _ref.assignTag(targetData, this.props.tag, dropTarget) : void 0 : void 0;
     }
   },
-  onDelete: function() {
+  onDelete: function(event) {
     var _base;
-    return typeof (_base = this.props.actions).onDelete === "function" ? _base.onDelete(this.props.entityId, this.props.tag) : void 0;
+    if (typeof (_base = this.props.actions).onDelete === "function") {
+      _base.onDelete(this.props.entityId, this.props.tag);
+    }
+    return event.stopPropagation();
   },
   render: function() {
-    var color;
-    color = webColors[this.props.tag.color].isLight ? 'black' : 'white';
+    var backgroundColor, color;
+    backgroundColor = this.props.tag.color || 'SkyBlue';
+    color = webColors[backgroundColor].isLight ? 'black' : 'white';
     return div({
       draggable: true,
       onDragStart: this.onDragStart,
@@ -475,8 +484,8 @@ Tag = React.createFactory(React.createClass({
       style: {
         padding: '1px 4px',
         borderRadius: 4,
-        border: "1px solid " + this.props.tag.color,
-        backgroundColor: this.props.tag.color,
+        border: "1px solid " + backgroundColor,
+        backgroundColor: backgroundColor,
         color: color,
         marginRight: 6,
         marginBottom: 4,
@@ -23342,4 +23351,3 @@ module.exports = addonEntry;
 
 },{"./app":1,"./helpers/domObserver":2,"./react/main":6}]},{},[]);
 ;return require("addon")}
-//Just a sample of concat task

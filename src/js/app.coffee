@@ -106,12 +106,13 @@ app =
     prepareTagListData: (tags) ->
       Q.when if app.selectedTagId then app.storage.prepareTagIndex(app.selectedTagId) else null
       .then (index) ->
-        tagsIds: tags
-        tagsMap: app.storage.getTagsMap()
-        tagIndex: index
-        actions: app.actions
-        helpers: app.helpers
-        canBeDeleted: true
+        extend {},
+          tagsIds: tags
+          tagsMap: app.storage.getTagsMap()
+          tagIndex: index
+          actions: extend {}, app.actions
+          helpers: app.helpers
+
 
     getTargetData: (elem) ->
       link = elem.querySelector 'h3 a'
@@ -157,7 +158,6 @@ app =
           .spread (entity) ->
             Q.resolve entity
 
-
     deleteTag: (entityId, tag) ->
       app.storage.getEntity entityId
       .then (entity) ->
@@ -182,8 +182,12 @@ app =
         app.exapi.getUserData 'tagsIndex'
       ]
       .spread (tags, tagsIndex) ->
-        appData.tags = tags or defaultTags
-        appData.tagsIndex = tagsIndex or defaultIndex
+        unless tags
+          appData.tags = defaultTags
+          appData.tagsIndex = defaultIndex
+        else
+          appData.tags = tags
+          appData.tagsIndex = tagsIndex
         Q.resolve tags
 
     getTagIndex: (id) ->

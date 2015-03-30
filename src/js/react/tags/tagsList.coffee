@@ -18,7 +18,6 @@ TagsList = React.createFactory React.createClass
             entityId: @props.entityId
             actions: @props.actions
             helpers: @props.helpers
-            canBeDeleted: @props.canBeDeleted
           }
 
 module.exports = TagsList

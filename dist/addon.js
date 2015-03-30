@@ -127,14 +127,13 @@ app = {
     },
     prepareTagListData: function(tags) {
       return Q.when(app.selectedTagId ? app.storage.prepareTagIndex(app.selectedTagId) : null).then(function(index) {
-        return {
+        return extend({}, {
           tagsIds: tags,
           tagsMap: app.storage.getTagsMap(),
           tagIndex: index,
-          actions: app.actions,
-          helpers: app.helpers,
-          canBeDeleted: true
-        };
+          actions: extend({}, app.actions),
+          helpers: app.helpers
+        });
       });
     },
     getTargetData: function(elem) {
@@ -197,8 +196,13 @@ app = {
     },
     getTags: function() {
       return Q.all([app.exapi.getUserData('googleTags'), app.exapi.getUserData('tagsIndex')]).spread(function(tags, tagsIndex) {
-        appData.tags = tags || defaultTags;
-        appData.tagsIndex = tagsIndex || defaultIndex;
+        if (!tags) {
+          appData.tags = defaultTags;
+          appData.tagsIndex = defaultIndex;
+        } else {
+          appData.tags = tags;
+          appData.tagsIndex = tagsIndex;
+        }
         return Q.resolve(tags);
       });
     },
@@ -453,13 +457,19 @@ Tag = React.createFactory(React.createClass({
       return (_ref = this.props.actions) != null ? typeof _ref.assignTag === "function" ? _ref.assignTag(targetData, this.props.tag, dropTarget) : void 0 : void 0;
     }
   },
-  onDelete: function() {
+  onDelete: function(event) {
     var _base;
-    return typeof (_base = this.props.actions).onDelete === "function" ? _base.onDelete(this.props.entityId, this.props.tag) : void 0;
+    if (typeof (_base = this.props.actions).onDelete === "function") {
+      _base.onDelete(this.props.entityId, this.props.tag);
+    }
+    return event.stopPropagation();
   },
   onSelectTag: function() {
     var _base;
-    return typeof (_base = this.props.actions).onSelectTag === "function" ? _base.onSelectTag(this.props.tag.id) : void 0;
+    if (typeof (_base = this.props.actions).onSelectTag === "function") {
+      _base.onSelectTag(this.props.tag.id);
+    }
+    return event.stopPropagation();
   },
   render: function() {
     return div({
@@ -480,7 +490,7 @@ Tag = React.createFactory(React.createClass({
       style: {
         display: 'inline-block'
       }
-    }, this.props.tag.name), this.props.canBeDeleted ? div({
+    }, this.props.tag.name), div({
       onClick: this.onDelete,
       style: {
         display: 'inline-block',
@@ -493,7 +503,7 @@ Tag = React.createFactory(React.createClass({
         backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat'
       }
-    }) : void 0);
+    }));
   }
 }));
 
@@ -619,8 +629,7 @@ TagsList = React.createFactory(React.createClass({
             tag: tag,
             entityId: _this.props.entityId,
             actions: _this.props.actions,
-            helpers: _this.props.helpers,
-            canBeDeleted: _this.props.canBeDeleted
+            helpers: _this.props.helpers
           }));
         }
       };

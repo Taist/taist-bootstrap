@@ -26,11 +26,13 @@ Tag = React.createFactory React.createClass
       targetData = @props.helpers.getTargetData?( dropTarget )
       @props.actions?.assignTag?( targetData, @props.tag, dropTarget )
 
-  onDelete: () ->
+  onDelete: (event) ->
     @props.actions.onDelete?( @props.entityId, @props.tag )
+    event.stopPropagation()
 
   onSelectTag: () ->
     @props.actions.onSelectTag?( @props.tag.id )
+    event.stopPropagation()
 
   render: ->
     div {
@@ -48,7 +50,6 @@ Tag = React.createFactory React.createClass
         display: 'inline-block'
     },
       div { style: display: 'inline-block' }, @props.tag.name
-      if @props.canBeDeleted
         div {
           onClick: @onDelete
           style:

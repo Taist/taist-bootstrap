@@ -38,6 +38,11 @@ TagsEditor = React.createFactory React.createClass
   onSelectColor: (color) ->
     @setState selectedColor: color, isColorPickerVisible: false
 
+  onKeyDown: (event) ->
+    switch event.key
+      when 'Enter' then @onSave()
+      when 'Escape' then @onCancel()
+
   render: ->
     div {
       onDragOver: @onDragOver
@@ -49,7 +54,8 @@ TagsEditor = React.createFactory React.createClass
         input {
           ref: 'tagName'
           type: 'text'
-          placeholder: 'Drop tag here'
+          placeholder: 'Drop tag here to edit'
+          onKeyDown: @onKeyDown
           style:
             border: '1px solid silver'
             height: 18

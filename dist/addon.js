@@ -613,6 +613,14 @@ TagsEditor = React.createFactory(React.createClass({
       isColorPickerVisible: false
     });
   },
+  onKeyDown: function(event) {
+    switch (event.key) {
+      case 'Enter':
+        return this.onSave();
+      case 'Escape':
+        return this.onCancel();
+    }
+  },
   render: function() {
     return div({
       onDragOver: this.onDragOver,
@@ -623,7 +631,8 @@ TagsEditor = React.createFactory(React.createClass({
     }, div({}, input({
       ref: 'tagName',
       type: 'text',
-      placeholder: 'Drop tag here',
+      placeholder: 'Drop tag here to edit',
+      onKeyDown: this.onKeyDown,
       style: {
         border: '1px solid silver',
         height: 18,

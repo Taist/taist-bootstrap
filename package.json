@@ -9,6 +9,8 @@
     "grunt-browserify": "*",
     "grunt-contrib-coffee": "*",
     "grunt-contrib-concat": "*",
-    "grunt-contrib-copy": "*"
+    "grunt-contrib-copy": "*",
+    "q": "^1.2.0",
+    "react": "^0.13.1"
   }
 }
